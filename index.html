@@ -1,0 +1,1013 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Forest Shuffle — A Floresta (Solo)</title>
+  <style>
+    :root{
+      --bg:#0f1a12;
+      --panel:#152317;
+      --panel2:#1b2e1e;
+      --text:#eaf2ea;
+      --muted:#b9c7b9;
+      --btn:#2d6a3d;
+      --btn2:#285e37;
+      --danger:#a43b3b;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+      --gap:12px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:radial-gradient(1200px 800px at 20% 0%, #18341f 0%, var(--bg) 50%, #0b100c 100%);
+      color:var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height:1.3;
+    }
+    header{
+      padding:18px 16px 8px;
+      max-width:1100px;
+      margin:0 auto;
+    }
+    h1{
+      font-size:18px;
+      margin:0 0 6px 0;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .sub{
+      font-size:12px;
+      color:var(--muted);
+      margin:0;
+    }
+    .wrap{
+      max-width:1100px; margin:0 auto; padding:12px 16px 24px;
+      display:grid; gap:var(--gap);
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "partida carta"
+        "desafio pontuacao";
+      align-items: start;
+    }
+    @media (max-width: 900px){
+      .wrap{
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "partida"
+          "carta"
+          "desafio"
+          "pontuacao";
+      }
+    }
+    .panel{
+      background:linear-gradient(180deg, var(--panel) 0%, var(--panel2) 100%);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel .hd{
+      padding:14px 14px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .panel .hd h2{
+      font-size:13px;
+      margin:0;
+      color:var(--muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+    .panel .bd{ padding:14px; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 520px){
+      .grid{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .stat{
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:10px 12px;
+    }
+    .stat .k{ font-size:11px; color:var(--muted); }
+    .stat .v{ font-size:18px; font-weight:900; margin-top:2px; }
+
+    .btnrow{ display:flex; flex-wrap:wrap; gap:10px; }
+    button{
+      appearance:none;
+      border:none;
+      border-radius:14px;
+      padding:12px 14px;
+      background:linear-gradient(180deg, var(--btn) 0%, var(--btn2) 100%);
+      color:var(--text);
+      font-weight:900;
+      letter-spacing:.2px;
+      cursor:pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,.25);
+      transition: transform .06s ease, filter .12s ease;
+    }
+    button:active{ transform: translateY(1px) scale(.99); }
+    button.secondary{ background:rgba(255,255,255,.08); font-weight:800; }
+    button.danger{ background:linear-gradient(180deg, #b64545 0%, var(--danger) 100%); }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+
+    .clearing{
+      display:flex;
+      gap:10px;
+      overflow:auto;
+      padding-bottom:6px;
+      scroll-snap-type:x mandatory;
+    }
+    .tile{
+      min-width:110px;
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:10px;
+      scroll-snap-align:start;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .tile .lbl{ font-size:11px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; gap:8px;}
+    .tile .mini{
+      height:52px;
+      border-radius:10px;
+      background:rgba(255,255,255,.06);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      font-size:12px;
+      color:#e9f6e9;
+      padding:0 8px;
+      text-align:center;
+    }
+    .mini small{ font-weight:800; opacity:.85; }
+
+    .automaCard{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .automaCard img{
+      width:min(200px, 54vw);
+      height:auto;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 12px 28px rgba(0,0,0,.35);
+      background:#0a120c;
+    }
+    .automaMeta{
+      flex:1;
+      min-width: 190px;
+    }
+    .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      font-size:12px;
+      color:var(--text);
+      font-weight:800;
+      margin:0 8px 8px 0;
+      white-space:nowrap;
+    }
+    .log{
+      max-height: 300px;
+      overflow:auto;
+      padding:10px 12px;
+      background: rgba(0,0,0,.25);
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.06);
+      font-size:12px;
+      color:#d9e7d9;
+    }
+    .log .t{ color:var(--muted); margin-right:6px; }
+    .footerNote{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:10px;
+    }
+    .badge{
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:999px;
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:11px;
+      color:var(--muted);
+      margin-left:8px;
+      vertical-align:middle;
+    }
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:14px;
+      transform:translateX(-50%);
+      background:rgba(10,18,12,.92);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      box-shadow: var(--shadow);
+      font-size:12px;
+      display:none;
+      z-index:50;
+    }
+    .toast.show{ display:block; animation: pop .18s ease; }
+    @keyframes pop{ from{ transform:translateX(-50%) translateY(6px); opacity:0;} to{ transform:translateX(-50%) translateY(0); opacity:1;} }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:11px;
+      padding:2px 6px;
+      border-radius:8px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--muted);
+    }
+  </style>
+
+  <meta name="theme-color" content="#0f1a12">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+</head>
+<body>
+<header>
+  <h1>Forest Shuffle — A Floresta (Solo) <span class="badge">web</span></h1>
+  <p class="sub">Você joga seu turno no físico, e aqui executa o turno do Floresta e a gestão da clareira. Atalhos: <span class="kbd">A</span> Floresta, <span class="kbd">S</span> Iniciar.</p>
+
+  <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+    <button id="installBtn" style="display:none; padding:10px 12px; border-radius:14px; border:none; cursor:pointer; font-weight:900;
+      background:linear-gradient(180deg,#2d6a3d 0%,#285e37 100%); color:#eaf2ea; box-shadow:0 8px 20px rgba(0,0,0,.25);">
+      Instalar app
+    </button>
+    <span id="offlineBadge" style="display:none; align-self:center; font-size:12px; color:#b9c7b9;
+      padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.10);">
+      Offline
+    </span>
+  </div>
+
+</header>
+
+<main class="wrap">
+  <section class="panel partida" style="grid-area:partida;">
+    <div class="hd">
+      <h2>Partida</h2>
+      <div class="btnrow">
+        <button onclick="startGame()">Iniciar</button>
+        <button class="secondary" onclick="playerTurn()">Meu turno</button>
+        <button onclick="automaTurn()" id="automaBtn">Turno da Floresta</button>
+        <button class="secondary" onclick="peekNext()">Ver próxima</button>
+        <button class="secondary" onclick="resetLog()">Limpar log</button>
+        <button class="danger" onclick="hardReset()">Reset</button>
+      </div>
+    </div>
+    <div class="bd">
+      <div class="grid" style="margin-bottom:12px;">
+        <div class="stat"><div class="k">Cartas (Floresta + Descarte)</div><div class="v" id="forestTotalCount">0</div></div>
+        <div class="stat"><div class="k">Baralho da Floresta</div><div class="v" id="automaCount">—</div></div>
+      </div>
+<div class="v" id="forestTotalCount">—</div></div>
+        <div class="stat"><div class="k">Descarte</div><div class="v" id="discardCount_removed">—</div></div>
+        <div class="stat"><div class="k">Floresta</div><div class="v" id="automaCount">—</div></div>
+      </div>
+</div>
+  </section>
+
+    <section class="panel desafio" style="grid-area:desafio;">
+    <div class="hd">
+      <h2>Desafio (opcional)</h2>
+      <div class="btnrow">
+        <button class="secondary" onclick="resetChallenge()">Limpar desafio</button>
+        <button class="secondary" onclick="openChallengesTable()">Ver tabela</button>
+      </div>
+    </div>
+    <div class="bd">
+      <div style="display:grid; gap:12px; grid-template-columns: 1fr 1fr;">
+        <div>
+          <div style="font-size:12px; color:var(--muted); font-weight:900; margin-bottom:6px;">Escolha o desafio</div>
+          <select id="challengeSelect" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); color:var(--text);">
+          </select>
+        </div>
+        <div>
+          <div style="font-size:12px; color:var(--muted); font-weight:900; margin-bottom:6px;">Meta mínima</div>
+          <select id="minLevelSelect" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); color:var(--text);">
+            <option value="bronze">Bronze</option>
+            <option value="silver">Prata</option>
+            <option value="gold">Ouro</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="challengeDesc" style="margin-top:12px; color:var(--muted); font-size:12px;"></div>
+      <div id="challengeInputs" style="margin-top:12px; display:grid; gap:10px; grid-template-columns: 1fr 1fr;"></div>
+
+      <div style="margin-top:12px;">
+        <div class="pill" id="challengeStatusPill">Sem desafio selecionado</div>
+      </div>
+      <div class="footerNote">Tabela de desafios do manual do modo solo.</div>
+    </div>
+  </section>
+
+  <section class="panel pontuacao" style="grid-area:pontuacao;">
+    <div class="hd">
+      <h2>Pontuação do jogador</h2>
+      <div class="btnrow">
+        <button class="secondary" onclick="resetScore()">Limpar pontuação</button>
+      </div>
+    </div>
+    <div class="bd">
+      <div style="color:var(--muted); font-size:12px; margin-bottom:10px;">
+        Preencha seus subtotais conforme o manual do jogo base: Árvores, Topo, Baixo, Esquerda, Direita e Caverna. O app calcula o total e o nível (Bronze/Prata/Ouro).
+      </div>
+
+      <div style="display:grid; gap:10px; grid-template-columns: 1fr 1fr;">
+        <div class="stat">
+          <div class="k">Árvores</div>
+          <input id="scoreArvores" type="number" inputmode="numeric" value="0"
+            style="width:100%; margin-top:6px; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); color:var(--text); font-weight:900;">
+        </div>
+        <div class="stat">
+          <div class="k">Topo</div>
+          <input id="scoreTopo" type="number" inputmode="numeric" value="0"
+            style="width:100%; margin-top:6px; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); color:var(--text); font-weight:900;">
+        </div>
+        <div class="stat">
+          <div class="k">Baixo</div>
+          <input id="scoreBaixo" type="number" inputmode="numeric" value="0"
+            style="width:100%; margin-top:6px; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); color:var(--text); font-weight:900;">
+        </div>
+        <div class="stat">
+          <div class="k">Esquerda</div>
+          <input id="scoreEsquerda" type="number" inputmode="numeric" value="0"
+            style="width:100%; margin-top:6px; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); color:var(--text); font-weight:900;">
+        </div>
+        <div class="stat">
+          <div class="k">Direita</div>
+          <input id="scoreDireita" type="number" inputmode="numeric" value="0"
+            style="width:100%; margin-top:6px; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); color:var(--text); font-weight:900;">
+        </div>
+        <div class="stat">
+          <div class="k">Caverna</div>
+          <input id="scoreCaverna" type="number" inputmode="numeric" value="0"
+            style="width:100%; margin-top:6px; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); color:var(--text); font-weight:900;">
+        </div>
+        <div class="stat">
+          <div class="k">Total (auto)</div>
+          <div class="v" id="scoreTotal">0</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div class="pill" id="levelPill">Nível: —</div>
+        <div class="pill" id="scoreVsMinPill">Meta mínima: —</div>
+        <div class="pill" id="challengePassPill">Desafio: —</div>
+      </div>
+
+      <div class="footerNote">O nível é calculado com base no desafio selecionado e sua pontuação total.</div>
+    </div>
+  </section>
+
+  <aside class="panel carta" style="grid-area:carta;">
+    <div class="hd">
+      <h2>Carta da Floresta</h2>
+      <div class="btnrow">
+        <button class="secondary" onclick="showRules()">Regras rápidas</button>
+      </div>
+    </div>
+    <div class="bd">
+      <div class="automaCard">
+        <img id="automaImg" alt="Carta da Floresta" />
+        <div class="automaMeta">
+          <div id="automaPills"></div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+      <div class="footerNote">
+        A partida termina imediatamente ao revelar <b>WINTER</b>. O Floresta não pontua.
+      </div>
+    </div>
+  </aside>
+</main>
+
+
+<div id="challengeModal" style="display:none; position:fixed; inset:0; z-index:60; background:rgba(0,0,0,.6); padding:18px;">
+  <div style="max-width:900px; margin:0 auto; background:rgba(10,18,12,.95); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:0 20px 50px rgba(0,0,0,.45); overflow:hidden;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.08);">
+      <div style="font-weight:900; color:#eaf2ea;">Tabela de desafios</div>
+      <button class="secondary" onclick="closeChallengesTable()" style="padding:10px 12px;">Fechar</button>
+    </div>
+    <div style="padding:12px; max-height:80vh; overflow:auto;">
+      <img src="./assets/tabela_desafios.png" alt="Tabela de desafios" style="width:100%; height:auto; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:#0a120c;">
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// =============================
+// Forest Shuffle — A Floresta (Solo) (web)
+// - Implementa o turno do Floresta e clareira.
+// - Deck do jogo é simulado (IDs genéricos).
+// - Cartas do Floresta usam as imagens fornecidas.
+// =============================
+
+// Estado
+let drawDeck = [];
+let discardPile = [];
+let forestPlayed = 0; // conta apenas cartas adicionadas à clareira e descartes do topo (1x)
+
+let clearing = [];
+let automaDeck = [];
+let automaDiscard = [];
+let lastAutoma = null;
+
+  forestPlayed = 0;
+let started = false;
+
+// Cartas do Floresta (20)
+// direction: 'left'/'right' para remoção na clareira
+// discardTop: ícone "1x" = descartar 1 carta do topo do deck
+const AUTOMA_CARDS = [
+  // especiais (1x)
+  { id:"S-1L-a", add:0, remove:1, direction:"left",  discardTop:true,  img:"./img/especial_-1_left_1x_a.png" },
+  { id:"S-1L-b", add:0, remove:1, direction:"left",  discardTop:true,  img:"./img/especial_-1_left_1x_b.png" },
+  { id:"S-1R-a", add:0, remove:1, direction:"right", discardTop:true,  img:"./img/especial_-1_right_1x_a.png" },
+  { id:"S-1R-b", add:0, remove:1, direction:"right", discardTop:true,  img:"./img/especial_-1_right_1x_b.png" },
+  { id:"S+1-a",  add:1, remove:0, direction:null,    discardTop:true,  img:"./img/especial_+1_1x_a.png" },
+  { id:"S+1-b",  add:1, remove:0, direction:null,    discardTop:true,  img:"./img/especial_+1_1x_b.png" },
+
+  // +2 +3 +4 (duplicadas)
+  { id:"+2-a", add:2, remove:0, direction:null, discardTop:false, img:"./img/mais_2_a.png" },
+  { id:"+2-b", add:2, remove:0, direction:null, discardTop:false, img:"./img/mais_2_b.png" },
+  { id:"+3-a", add:3, remove:0, direction:null, discardTop:false, img:"./img/mais_3_a.png" },
+  { id:"+3-b", add:3, remove:0, direction:null, discardTop:false, img:"./img/mais_3_b.png" },
+  { id:"+4-a", add:4, remove:0, direction:null, discardTop:false, img:"./img/mais_4_a.png" },
+  { id:"+4-b", add:4, remove:0, direction:null, discardTop:false, img:"./img/mais_4_b.png" },
+
+  // -2 -3 -4
+  { id:"-2R-a", add:0, remove:2, direction:"right", discardTop:false, img:"./img/menos_2_right_a.png" },
+  { id:"-2R-b", add:0, remove:2, direction:"right", discardTop:false, img:"./img/menos_2_right_b.png" },
+  { id:"-2L-a", add:0, remove:2, direction:"left",  discardTop:false, img:"./img/menos_2_left_a.png" },
+  { id:"-2L-b", add:0, remove:2, direction:"left",  discardTop:false, img:"./img/menos_2_left_b.png" },
+  { id:"-3R",   add:0, remove:3, direction:"right", discardTop:false, img:"./img/menos_3_right.png" },
+  { id:"-3L",   add:0, remove:3, direction:"left",  discardTop:false, img:"./img/menos_3_left.png" },
+  { id:"-4L",   add:0, remove:4, direction:"left",  discardTop:false, img:"./img/menos_4_left.png" },
+  { id:"-4R",   add:0, remove:4, direction:"right", discardTop:false, img:"./img/menos_4_right.png" },
+];
+
+function startGame(){
+  // Reset
+  drawDeck = [];
+  discardPile = [];
+  clearing = [];
+  automaDiscard = [];
+  lastAutoma = null;
+
+  // Deck simulado
+  for(let i=1;i<=100;i++) drawDeck.push("Carta " + i);
+
+  // Setup solo: retorna 30 cartas à caixa
+  drawDeck.splice(0,30);
+
+  // 1 carta WINTER embaralhada nas últimas 10:
+  shuffle(drawDeck);
+  const tail = drawDeck.splice(drawDeck.length - 10, 10);
+  tail.push("WINTER");
+  shuffle(tail);
+  drawDeck.push(...tail);
+
+  // Clareira: 5 cartas
+  for(let i=0;i<5;i++){
+    const c = drawDeck.pop();
+    clearing.push(c);
+  }
+
+  // Floresta: 20 cartas
+  automaDeck = AUTOMA_CARDS.slice();
+  shuffle(automaDeck);
+
+  started = true;
+  toast("Partida iniciada");
+  logLine("🟢 Partida iniciada. Clareira com 5 cartas.");
+  updateUI();
+}
+
+function playerTurn(){
+  if(!guardStarted()) return;
+  logLine("👤 Seu turno: jogue normalmente no físico. Depois clique em 'Turno da Floresta'.");
+}
+
+function automaTurn(){
+  if(!guardStarted()) return;
+
+  if(automaDeck.length === 0){
+    automaDeck = automaDiscard.slice();
+    automaDiscard = [];
+    shuffle(automaDeck);
+    logLine("🔁 Baralho da Floresta reembaralhado.");
+  }
+
+  const card = automaDeck.pop();
+  automaDiscard.push(card);
+  lastAutoma = card;
+
+  logLine(`🤖 Floresta revelou: ${card.id}`);
+
+  // (1) adicionar
+  if(card.add > 0){
+    const ok = drawToClearing(card.add);
+    if(!ok) return; // WINTER encerrou
+  }
+
+  // (2) remover
+  if(card.remove > 0){
+    removeFromClearing(card.remove, card.direction);
+  }
+
+  // (3) descartar topo se 1x
+  if(card.discardTop){
+    discardTopOfDeck();
+    if(!started) return; // pode ter sido WINTER
+  }
+
+  compactClearing();
+  updateUI();
+}
+
+function peekNext(){
+  if(!guardStarted()) return;
+  if(automaDeck.length === 0){
+    logLine("👀 Próxima carta: baralho vazio (vai reembaralhar no próximo turno).");
+    toast("Floresta vazio — reembaralha no próximo");
+    return;
+  }
+  const next = automaDeck[automaDeck.length - 1];
+  logLine(`👀 Próxima carta da Floresta: ${next.id}`);
+  toast("Próxima: " + next.id);
+}
+
+function drawToClearing(n){
+  let added = 0;
+  for(let i=0;i<n;i++){
+    if(drawDeck.length === 0){
+      logLine("⚠️ Deck vazio.");
+      break;
+    }
+    const c = drawDeck.pop();
+    if(c === "WINTER"){
+      endGame();
+      return false;
+    }
+    clearing.push(c);
+    added++;
+  }
+  logLine(`📥 A Floresta adicionou ${added}/${n} carta(s) à direita da clareira.`);
+  forestPlayed += added;
+  forestPlayed += added;
+  return true;
+}
+
+function removeFromClearing(n, direction){
+  let removed = 0;
+  for(let i=0;i<n;i++){
+    if(clearing.length === 0) break;
+    let c;
+    if(direction === "left") c = clearing.shift();
+    else c = clearing.pop();
+    discardPile.push(c);
+    removed++;
+  }
+  logLine(`🗑️ Floresta removeu ${removed}/${n} da ${direction==="left"?"esquerda":"direita"} da clareira.`);
+}
+
+
+function discardTopOfDeck(){
+  if(drawDeck.length === 0){
+    logLine("⚠️ Sem carta para descartar do topo do deck.");
+    return;
+  }
+  const c = drawDeck.pop();
+  if(c === "WINTER"){
+    endGame();
+    return;
+  }
+  discardPile.push(c);
+  forestPlayed += 1;
+  logLine("🗑️ Ícone 1x: A Floresta descartou 1 carta do topo do deck.");
+}
+
+function compactClearing(){
+  // Clareira é um array compacto por definição.
+  updateUI();
+}
+
+function endGame(){
+  started = false;
+  lastAutoma = { id:"WINTER", add:0, remove:0, direction:null, discardTop:false, img:"" };
+  updateUI();
+  logLine("❄️ WINTER revelada: fim imediato do jogo. Agora faça a pontuação.");
+  toast("WINTER — fim do jogo");
+  alert("WINTER revelada — fim do jogo! Agora faça a pontuação (o Floresta não pontua).");
+}
+
+function hardReset(){
+  drawDeck = [];
+  discardPile = [];
+  clearing = [];
+  automaDeck = [];
+  automaDiscard = [];
+  lastAutoma = null;
+  started = false;
+  resetLog();
+  updateUI();
+  toast("Reset feito");
+}
+
+function resetLog(){
+  document.getElementById("log").innerHTML = "";
+  logLine("🧾 Log reiniciado.");
+}
+
+function showRules(){
+  const msg =
+`Regras rápidas (turno da Floresta):
+1) Revele 1 carta da Floresta.
+2) Coloque +N cartas do deck na clareira (sempre à direita).
+3) Remova -N cartas da clareira para o descarte (lado conforme seta).
+4) Se houver ícone 1x: descarte 1 carta do topo do deck.
+5) Feche espaços na clareira (aqui já fica compacta).
+6) Se revelar WINTER: fim imediato.`;
+  alert(msg);
+}
+
+// UI
+function updateUI(){
+  document.getElementById("forestTotalCount").textContent = String(forestPlayed);
+  document.getElementById("automaCount").textContent = automaDeck.length ? String(automaDeck.length) : "—";
+  if(!clearing.length){
+    const t = document.createElement("div");
+    t.className = "tile";
+    t.innerHTML = `<div class="lbl">vazio</div><div class="mini">—</div>`;
+    clear.appendChild(t);
+  } else {
+    clearing.forEach((c, idx)=>{
+      const t = document.createElement("div");
+      t.className = "tile";
+      const isWinter = (c === "WINTER");
+      t.innerHTML = `
+        <div class="lbl">
+          <span>#${idx+1}</span>
+          <span style="opacity:.8">${isWinter ? "❄️" : ""}</span>
+        </div>
+        <div class="mini">${escapeHtml(c)}</div>`;
+      clear.appendChild(t);
+    });
+  }
+
+  // Floresta card area
+  const img = document.getElementById("automaImg");
+  const pills = document.getElementById("automaPills");
+  pills.innerHTML = "";
+
+  const btn = document.getElementById("automaBtn");
+  btn.disabled = !started;
+
+  if(lastAutoma && lastAutoma.img){
+    img.src = lastAutoma.img;
+    img.style.display = "";
+  } else {
+    img.removeAttribute("src");
+    img.style.display = "none";
+  }
+
+  if(lastAutoma && lastAutoma.id === "WINTER"){
+    pills.appendChild(pill("Fim do jogo (WINTER)"));
+  } else if(lastAutoma){
+    if(lastAutoma.add) pills.appendChild(pill(`+${lastAutoma.add} → clareira`));
+    if(lastAutoma.remove) pills.appendChild(pill(`-${lastAutoma.remove} → ${lastAutoma.direction==="left"?"esq.":"dir."}`));
+    if(lastAutoma.discardTop) pills.appendChild(pill("1x descarta topo"));
+  } else {
+    pills.appendChild(pill("Nenhuma carta ainda"));
+  }
+}
+
+function pill(text){
+  const d = document.createElement("div");
+  d.className = "pill";
+  d.textContent = text;
+  return d;
+}
+
+function logLine(msg){
+  const log = document.getElementById("log");
+  const now = new Date();
+  const t = now.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  const line = document.createElement("div");
+  line.innerHTML = `<span class="t">${t}</span>${escapeHtml(msg)}`;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function guardStarted(){
+  if(!started){
+    toast("Clique em Iniciar");
+    alert("Clique em Iniciar para começar.");
+    return false;
+  }
+  return true;
+}
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function escapeHtml(s){
+  return String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function toast(text){
+  const el = document.getElementById("toast");
+  el.textContent = text;
+  el.classList.add("show");
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=> el.classList.remove("show"), 1600);
+}
+
+// keyboard shortcuts
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "a" || e.key === "A") automaTurn();
+  if(e.key === "s" || e.key === "S") startGame();
+});
+
+
+// =============================
+// Desafios (manual do modo solo)
+// =============================
+const CHALLENGES = [
+  { key:"none", name:"Sem desafio", desc:"Jogue livremente.", target:null, scores:null, inputs:[] },
+  { key:"bat", name:"1) Bat Forest", desc:"Pelo menos 4 morcegos na sua floresta.", target:{type:"min", field:"bats", min:4},
+    scores:{bronze:200, silver:250, gold:300}, inputs:[{id:"bats", label:"Qtd. morcegos", type:"number"}] },
+  { key:"ornithologist", name:"2) Ornithologist", desc:"Um pássaro em cada árvore.", target:{type:"bool", field:"birdOnEveryTree"},
+    scores:{bronze:200, silver:275, gold:350}, inputs:[{id:"birdOnEveryTree", label:"Pássaro em cada árvore?", type:"checkbox"}] },
+  { key:"speleologist", name:"3) Speleologist", desc:"Pelo menos 18 cartas na sua caverna.", target:{type:"min", field:"caveCards", min:18},
+    scores:{bronze:150, silver:225, gold:300}, inputs:[{id:"caveCards", label:"Cartas na caverna", type:"number"}] },
+  { key:"reforestation", name:"4) Reforestation", desc:"Pelo menos 15 árvores na sua floresta (incl. mudas).", target:{type:"min", field:"treesCount", min:15},
+    scores:{bronze:200, silver:275, gold:350}, inputs:[{id:"treesCount", label:"Qtd. árvores (incl. mudas)", type:"number"}] },
+  { key:"butterfly", name:"5) Butterfly Collector", desc:"Todas as 5 borboletas diferentes na sua floresta.", target:{type:"min", field:"butterfliesDifferent", min:5},
+    scores:{bronze:200, silver:300, gold:400}, inputs:[{id:"butterfliesDifferent", label:"Borboletas diferentes (0–5)", type:"number"}] },
+  { key:"amphibians", name:"6) Amphibians", desc:"Pelo menos 5 anfíbios na sua floresta.", target:{type:"min", field:"amphibians", min:5},
+    scores:{bronze:200, silver:275, gold:350}, inputs:[{id:"amphibians", label:"Qtd. anfíbios", type:"number"}] },
+  { key:"pawed", name:"7) Pawed Animals", desc:"Pelo menos 15 animais com patas na sua floresta.", target:{type:"min", field:"pawedAnimals", min:15},
+    scores:{bronze:200, silver:275, gold:350}, inputs:[{id:"pawedAnimals", label:"Qtd. animais com patas", type:"number"}] },
+  { key:"bargain", name:"8) Bargain Hunter", desc:"Pelo menos 17 cartas com custo 0 (sem contar mudas).", target:{type:"min", field:"zeroCostCards", min:17},
+    scores:{bronze:200, silver:275, gold:350}, inputs:[{id:"zeroCostCards", label:"Cartas custo 0 (sem mudas)", type:"number"}] },
+  { key:"insects", name:"9) Insects", desc:"1 inseto em cada árvore e pelo menos 10 insetos no total.",
+    target:{type:"compound", rules:[{type:"bool", field:"insectOnEveryTree"},{type:"min", field:"insectsTotal", min:10}]},
+    scores:{bronze:200, silver:300, gold:400},
+    inputs:[{id:"insectOnEveryTree", label:"Inseto em cada árvore?", type:"checkbox"},{id:"insectsTotal", label:"Insetos (total)", type:"number"}] },
+  { key:"hunterprey", name:"10) Hunter and Prey", desc:"Pelo menos 100 pontos vindos de Lince e Corço.", target:{type:"min", field:"lynxRoePoints", min:100},
+    scores:{bronze:200, silver:250, gold:300}, inputs:[{id:"lynxRoePoints", label:"Pts de Lince + Corço", type:"number"}] },
+  { key:"foxhare", name:"11) Foxes and Hares", desc:"Pelo menos 8 Raposas e Lebres no total.", target:{type:"min", field:"foxHareTotal", min:8},
+    scores:{bronze:200, silver:300, gold:400}, inputs:[{id:"foxHareTotal", label:"Raposas + Lebres (total)", type:"number"}] },
+  { key:"stampede", name:"12) Stampede", desc:"Pelo menos 4 diferentes animais de casco fendido.", target:{type:"min", field:"clovenDifferent", min:4},
+    scores:{bronze:200, silver:300, gold:400}, inputs:[{id:"clovenDifferent", label:"Casco fendido (diferentes)", type:"number"}] },
+];
+
+function initChallengeUI(){
+  const sel = document.getElementById("challengeSelect");
+  if(!sel) return;
+  sel.innerHTML = "";
+  CHALLENGES.forEach(ch=>{
+    const opt = document.createElement("option");
+    opt.value = ch.key;
+    opt.textContent = ch.name;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener("change", renderChallenge);
+  document.getElementById("minLevelSelect").addEventListener("change", recomputeAll);
+  renderChallenge();
+}
+
+function resetChallenge(){
+  const sel = document.getElementById("challengeSelect");
+  if(sel) sel.value = "none";
+  renderChallenge();
+}
+
+function getSelectedChallenge(){
+  const key = document.getElementById("challengeSelect")?.value || "none";
+  return CHALLENGES.find(c=>c.key===key) || CHALLENGES[0];
+}
+
+function renderChallenge(){
+  const ch = getSelectedChallenge();
+  const desc = document.getElementById("challengeDesc");
+  const box = document.getElementById("challengeInputs");
+  const pill = document.getElementById("challengeStatusPill");
+  if(desc) desc.textContent = ch.desc || "";
+  if(box){
+    box.innerHTML = "";
+    (ch.inputs||[]).forEach(inp=>{
+      const wrap = document.createElement("div");
+      wrap.className = "stat";
+      const id = "ch_" + inp.id;
+      if(inp.type === "checkbox"){
+        wrap.innerHTML = `<div class="k">${inp.label}</div>
+          <label style="display:flex; gap:10px; align-items:center; margin-top:8px;">
+            <input id="${id}" type="checkbox" style="transform:scale(1.2);">
+            <span style="color:var(--muted); font-size:12px;">Sim</span>
+          </label>`;
+      } else {
+        wrap.innerHTML = `<div class="k">${inp.label}</div>
+          <input id="${id}" type="number" inputmode="numeric" value="0"
+            style="width:100%; margin-top:6px; padding:10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); color:var(--text); font-weight:900;">`;
+      }
+      box.appendChild(wrap);
+    });
+    (ch.inputs||[]).forEach(inp=>{
+      const el = document.getElementById("ch_"+inp.id);
+      if(el){
+        el.addEventListener("input", recomputeAll);
+        el.addEventListener("change", recomputeAll);
+      }
+    });
+  }
+  if(pill){
+    pill.textContent = (ch.key==="none") ? "Sem desafio selecionado" : "Desafio selecionado: " + ch.name;
+  }
+  recomputeAll();
+}
+
+// =============================
+// Pontuação + níveis
+// =============================
+function initScoreUI(){
+  ["scoreArvores","scoreTopo","scoreBaixo","scoreEsquerda","scoreDireita","scoreCaverna"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.addEventListener("input", recomputeAll);
+  });
+  recomputeAll();
+}
+function resetScore(){
+  ["scoreArvores","scoreTopo","scoreBaixo","scoreEsquerda","scoreDireita","scoreCaverna"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = 0;
+  });
+  recomputeAll();
+}
+function readNumber(id){
+  const el = document.getElementById(id);
+  const v = el ? Number(el.value) : 0;
+  return Number.isFinite(v) ? v : 0;
+}
+function readChallengeValue(field){
+  const el = document.getElementById("ch_"+field);
+  if(!el) return 0;
+  if(el.type === "checkbox") return el.checked;
+  const v = Number(el.value);
+  return Number.isFinite(v) ? v : 0;
+}
+function computeTotalScore(){
+  return readNumber("scoreArvores") + readNumber("scoreTopo") + readNumber("scoreBaixo") + readNumber("scoreEsquerda") + readNumber("scoreDireita") + readNumber("scoreCaverna");
+}
+function getMinLevel(){
+  return document.getElementById("minLevelSelect")?.value || "bronze";
+}
+function computeLevelFromThresholds(total, scores){
+  if(!scores) return "—";
+  if(total >= scores.gold) return "Ouro";
+  if(total >= scores.silver) return "Prata";
+  if(total >= scores.bronze) return "Bronze";
+  return "Abaixo de Bronze";
+}
+function checkChallengeTarget(ch){
+  if(!ch.target) return {ok:true};
+  const t = ch.target;
+  if(t.type === "min") return {ok: Number(readChallengeValue(t.field)) >= t.min};
+  if(t.type === "bool") return {ok: !!readChallengeValue(t.field)};
+  if(t.type === "compound"){
+    let ok = true;
+    for(const r of t.rules){
+      if(r.type === "bool") ok = ok && !!readChallengeValue(r.field);
+      else if(r.type === "min") ok = ok && (Number(readChallengeValue(r.field)) >= r.min);
+    }
+    return {ok};
+  }
+  return {ok:false};
+}
+function recomputeAll(){
+  const total = computeTotalScore();
+  const totalEl = document.getElementById("scoreTotal");
+  if(totalEl) totalEl.textContent = String(total);
+
+  const ch = getSelectedChallenge();
+  const minLevel = getMinLevel();
+  const minThreshold = ch.scores ? ch.scores[minLevel] : null;
+
+  const achieved = computeLevelFromThresholds(total, ch.scores);
+  const levelPill = document.getElementById("levelPill");
+  if(levelPill) levelPill.textContent = "Nível: " + achieved;
+
+  const scoreVsMin = document.getElementById("scoreVsMinPill");
+  if(scoreVsMin){
+    if(minThreshold == null) scoreVsMin.textContent = "Meta mínima: —";
+    else scoreVsMin.textContent = `Meta mínima (${minLevel==="bronze"?"Bronze":minLevel==="silver"?"Prata":"Ouro"}): ${total}/${minThreshold}`;
+  }
+
+  const challengePass = document.getElementById("challengePassPill");
+  if(challengePass){
+    if(ch.key === "none"){
+      challengePass.textContent = "Desafio: —";
+    } else {
+      const t = checkChallengeTarget(ch);
+      const scoreOk = (minThreshold == null) ? true : (total >= minThreshold);
+      challengePass.textContent = (t.ok && scoreOk) ? "Desafio: ✅ Concluído" : "Desafio: ❌ Não concluído";
+    }
+  }
+}
+
+
+
+function openChallengesTable(){
+  const m = document.getElementById("challengeModal");
+  if(m) m.style.display = "block";
+}
+function closeChallengesTable(){
+  const m = document.getElementById("challengeModal");
+  if(m) m.style.display = "none";
+}
+
+// boot
+updateUI();
+initChallengeUI();
+initScoreUI();
+logLine("Pronto. Clique em Iniciar.");
+</script>
+
+<script>
+  // PWA: service worker
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+    });
+  }
+
+  // PWA: install prompt
+  let deferredPrompt = null;
+  const installBtn = document.getElementById("installBtn");
+  const offlineBadge = document.getElementById("offlineBadge");
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtn) installBtn.style.display = "inline-block";
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      try { await deferredPrompt.userChoice; } catch(e) {}
+      deferredPrompt = null;
+      installBtn.style.display = "none";
+    });
+  }
+
+  function updateOnlineUI(){
+    const isOffline = !navigator.onLine;
+    if (offlineBadge) offlineBadge.style.display = isOffline ? "inline-block" : "none";
+  }
+  window.addEventListener("online", updateOnlineUI);
+  window.addEventListener("offline", updateOnlineUI);
+  updateOnlineUI();
+</script>
+
+</body>
+</html>
