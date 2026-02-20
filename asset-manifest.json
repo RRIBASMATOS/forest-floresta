@@ -1,0 +1,25 @@
+{
+  "images": [
+    "./assets/tabela_desafios.png",
+    "./img/especial_+1_1x_a.png",
+    "./img/especial_+1_1x_b.png",
+    "./img/especial_-1_left_1x_a.png",
+    "./img/especial_-1_left_1x_b.png",
+    "./img/especial_-1_right_1x_a.png",
+    "./img/especial_-1_right_1x_b.png",
+    "./img/mais_2_a.png",
+    "./img/mais_2_b.png",
+    "./img/mais_3_a.png",
+    "./img/mais_3_b.png",
+    "./img/mais_4_a.png",
+    "./img/mais_4_b.png",
+    "./img/menos_2_left_a.png",
+    "./img/menos_2_left_b.png",
+    "./img/menos_2_right_a.png",
+    "./img/menos_2_right_b.png",
+    "./img/menos_3_left.png",
+    "./img/menos_3_right.png",
+    "./img/menos_4_left.png",
+    "./img/menos_4_right.png"
+  ]
+}
